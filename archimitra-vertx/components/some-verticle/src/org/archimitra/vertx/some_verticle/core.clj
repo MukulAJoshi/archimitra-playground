@@ -1,4 +1,4 @@
-(ns org.archimitra.vertx.hello-verticle.core
+(ns org.archimitra.vertx.some-verticle.core
   (:import
    (io.vertx.core
     Vertx
@@ -15,8 +15,9 @@
 ; Atom - vertx - refers to the main entry point to Vertx functionality
 (def vertx (atom (Vertx/vertx)))
 
-; Core function that creates the Vertx HttpServer 
-(defn configure-vertx-server [^Vertx vertx]
+; Core function that creates the Vertx HttpServer
+; Check the async result of starting the HttpServer and then complete/fail the Promise
+(defn configure-vertx-server [^Vertx vertx ^Promise startPromise]
   (log/info "In Config Vertx")
   (log/info vertx)
   (.setPeriodic vertx 5000
@@ -26,9 +27,13 @@
   (doto (.createHttpServer vertx)
     (.requestHandler (reify Handler
                        (handle [this request]
-                               ((log/info "Request #{} from {}" (swap! counter inc) (.host (.remoteAddress request)))
-                                (.end (.response request) "Hello!")))))
-    (.listen 8080))
+                         ((log/info "Request #{} from {}" (swap! counter inc) (.host (.remoteAddress request)))
+                          (.end (.response request) "Hello!")))))
+    (.listen 8080 (reify Handler
+                    (handle [this async-result]
+                      (if (.succeeded async-result) 
+                        (.complete startPromise) 
+                        (.fail startPromise (.cause async-result)))))))
   (log/info "open http://localhost:8080/"))
 
 ; proxied methods cannot be invoked from the abstract class
@@ -41,15 +46,13 @@
   (log/info "In Create Hello Verticle")
   (proxy [AbstractVerticle] []
     (start [^Promise startPromise]
-      (log/info "In START")
-      (configure-vertx-server (.getVertx this))
-      (.complete startPromise))))
+           (log/info "In START")
+           (configure-vertx-server (.getVertx this) startPromise))))
 
 (comment
   (deref counter)
   (deref vertx)
   (log/info @vertx)
-  (try 
+  (try
     (log/info (.result (.deployVerticle @vertx (create-hello-verticle))))
-    (catch Exception e (log/error (.getMessage e))))
-  )
+    (catch Exception e (log/error (.getMessage e)))))
