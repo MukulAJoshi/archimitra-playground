@@ -20,9 +20,9 @@
   (reify Handler
     (handle [this message]
       (let [message-body (.body message)
-            id (get message-body "id")
-            temperature (.format decimal-format (get message-body "temp"))]
-        (log/info "{} reports a temperature ~{}C" id temperature)))))
+            id (key (first message-body))
+            temperature (.format decimal-format (val (first message-body)))]
+        (log/info (str id " reports a temperature ~" temperature "C"))))))
 
 ; proxied methods cannot be invoked from the abstract class
 ; thus need to override the base method in the abstract class

@@ -14,12 +14,6 @@
   (:require
    [clojure.tools.logging :as log]))
 
-;sensor-id - to represent sensor id
-(def sensor-id (.toString (UUID/randomUUID)))
-
-;temperature - to represent the sensor temperature - since this is being updated, using atom
-(def temperature (atom (double 21.0)))
-
 ;get the next random number
 (defn delta []
   (let [next-int (.nextInt (ThreadLocalRandom/current))
@@ -29,16 +23,17 @@
     (- next-gaussian))))
 
 (defn update-message [^Vertx vertx timer-id]
-  (let [temp (swap! temperature (fn [n] (+ n (/ (delta) 10)))) 
-        payload (assoc {} "id" sensor-id
-                          "temp" temp)
+  (let [current-context (Vertx/currentContext)
+        sensor-id (.getLocal current-context "sensor-id")
+        temperature ((fn [n] (+ n (/ (delta) 10))) (double 21.0)) 
+        payload (assoc {} sensor-id temperature)
         event-bus (.eventBus vertx)]
-    (log/info "publishing message : " sensor-id temp)
+    (log/info "publishing message : " sensor-id temperature)
     (.publish event-bus "sensor.updates" payload)
     (schedule-next-update vertx)))
 
 (defn schedule-next-update [^Vertx vertx]
-  (let [time-interval (+ (.nextInt (ThreadLocalRandom/current) 5000) 1000)]
+  (let [time-interval (+ (.nextInt (ThreadLocalRandom/current) 30000) 31000)]
     (log/info "time interval : " time-interval)
     (.setTimer vertx time-interval (reify Handler (handle [this timer-id]
                                                     (update-message vertx timer-id))))))
@@ -52,6 +47,11 @@
     (get [this]
       (proxy [AbstractVerticle] []
         (start [^Promise startPromise]
-          (log/info "In START Heat Sensor Verticle")
-          (schedule-next-update (.getVertx this))
-          (.complete startPromise))))))
+          (let [_ (log/info "BEFORE vertx and context in Heat Sensor Verticle")
+                vertx (.getVertx this)
+                _ (log/info "context : " (Vertx/currentContext))
+                current-context (Vertx/currentContext)]
+            (log/info (str "In START Heat Sensor Verticle with ID: " (.deploymentID this)))
+            (.putLocal current-context "sensor-id" (.toString (UUID/randomUUID)))
+            (schedule-next-update vertx)
+            (.complete startPromise)))))))
