@@ -4,7 +4,9 @@
     Vertx
     Handler
     AbstractVerticle
-    Promise))
+    Promise)
+   (io.vertx.core.http
+    HttpServerRequest))
   (:require
    [clojure.tools.logging :as log]))
 
@@ -12,22 +14,22 @@
 ; Atom will enable thread safe update of counter
 (def counter (atom 1))
 
-; Atom - vertx - refers to the main entry point to Vertx functionality
-(def vertx (atom (Vertx/vertx)))
+(defn ^Handler tick-handler []
+  (reify Handler
+    (handle [this _]
+      (log/info "tick"))))
+
+(defn ^Handler request-handler []
+  (reify Handler
+    (handle [this request] 
+      ((log/info (str "Request #" (swap! counter inc) " from " (.host (.remoteAddress request))))
+       (.end (.response request) "Hello!")))))
 
 ; Core function that creates the Vertx HttpServer 
 (defn configure-vertx-server [^Vertx vertx]
-  (log/info "In Config Vertx")
-  (log/info vertx)
-  (.setPeriodic vertx 5000
-                (reify Handler
-                  (handle [this _]
-                    (log/info "tick"))))
+  (.setPeriodic vertx 5000 (tick-handler))
   (doto (.createHttpServer vertx)
-    (.requestHandler (reify Handler
-                       (handle [this request]
-                               ((log/info "Request #{} from {}" (swap! counter inc) (.host (.remoteAddress request)))
-                                (.end (.response request) "Hello!")))))
+    (.requestHandler (request-handler))
     (.listen 8080))
   (log/info "open http://localhost:8080/"))
 
@@ -41,15 +43,12 @@
   (log/info "In Create Hello Verticle")
   (proxy [AbstractVerticle] []
     (start [^Promise startPromise]
-      (log/info "In START")
       (configure-vertx-server (.getVertx this))
       (.complete startPromise))))
 
 (comment
   (deref counter)
-  (deref vertx)
-  (log/info @vertx)
-  (try 
-    (log/info (.result (.deployVerticle @vertx (create-hello-verticle))))
-    (catch Exception e (log/error (.getMessage e))))
-  )
+  (let [vertx (Vertx/vertx)]
+    (try
+      (log/info (.result (.deployVerticle vertx (create-hello-verticle))))
+      (catch Exception e (log/error (.getMessage e))))))

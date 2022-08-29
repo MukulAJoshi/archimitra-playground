@@ -12,10 +12,8 @@
    (java.util.function
     Supplier))
   (:require
-   [clojure.tools.logging :as log]))
-
-; Atom - vertx - refers to the main entry point to Vertx functionality
-(def vertx (atom (Vertx/vertx)))
+   [clojure.tools.logging :as log]
+   [org.archimitra.vertx.util.interface :as util]))
 
 (defn blocking-code-handler []
   (reify Handler
@@ -31,7 +29,7 @@
   (reify Handler
     (handle [this async-result]
       (if (.succeeded async-result)
-        (log/info (str "Blocking code result: {}" (.result async-result)))
+        (log/info (str "Blocking code result: " (.result async-result)))
         (log/error (str "Woops" (.cause async-result)))))))
 
 (defn periodic-handler [^Vertx vertx]
@@ -45,23 +43,19 @@
 ; so the proxy will override the start(Promise<Void>) which is the base method
 ; Supplier Functional Interface is used to get the Worker Verticle instance using proxy
 (defn ^Supplier create-offload-verticle []
-  (reify Supplier
-    (get [this]
-      (proxy [AbstractVerticle] []
-        (start [^Promise startPromise]
-          (log/info "In START") 
-          (let [vertx (.getVertx this)]
-            (.setPeriodic vertx
-                          5000
-                          (periodic-handler vertx)))
-          (.complete startPromise))))))
+  (util/f-to-supplier 
+   #(proxy [AbstractVerticle] [] 
+      (start [^Promise startPromise] 
+        (log/info "In START") 
+        (let [vertx (.getVertx this)] 
+          (.setPeriodic vertx 5000 (periodic-handler vertx))) 
+        (.complete startPromise)))))
 
 (comment
-  (deref vertx)
-  (log/info @vertx)
-  (try
-    (let [opts (doto (DeploymentOptions.)
-                 (.setInstances 2)
-                 (.setWorker true))]
-      (log/info (.result (.deployVerticle @vertx (create-offload-verticle) opts))))
-    (catch Exception e (log/error "Woops" (.getMessage e)))))
+  (let [vertx (Vertx/vertx)]
+    (try
+      (let [opts (doto (DeploymentOptions.)
+                   (.setInstances 2)
+                   (.setWorker true))]
+        (log/info (.result (.deployVerticle vertx (create-offload-verticle) opts))))
+      (catch Exception e (log/error "Woops" (.getMessage e))))))

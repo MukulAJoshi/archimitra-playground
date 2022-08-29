@@ -4,8 +4,8 @@
         ch.qos.logback/logback-classic {:mvn/version "1.2.11"}
         org.clojure/tools.logging {:mvn/version "1.2.4"}}
  :aliases {:dev {:extra-paths ["development/src"
-                               "components/hello-verticle/src"
-                               "components/hello-verticle/resources"]}
-           :test {:extra-paths ["components/hello-verticle/test"]
+                               "components/util/src"
+                               "components/util/resources"]}
+           :test {:extra-paths ["components/util/test"]
                   :extra-deps {}}}
  :jvm-opts {"vertx.logger-delegate-factory-class-name" "io.vertx.core.logging.SLF4JLogDelegateFactory"}}

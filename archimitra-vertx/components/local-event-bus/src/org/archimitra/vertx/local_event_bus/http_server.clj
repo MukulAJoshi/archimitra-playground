@@ -37,7 +37,7 @@
       (let [message-body (.body message)]
         (doto response
           (.write "event: update\n")
-          (.write (str "data : " (.encode message-body) "\n\n")))))))
+          (.write (str "data : " (json/write-str message-body) "\n\n")))))))
 
 (defn sse [^HttpServerResponse response ^Vertx vertx]
   (let [event-bus (.eventBus vertx)
