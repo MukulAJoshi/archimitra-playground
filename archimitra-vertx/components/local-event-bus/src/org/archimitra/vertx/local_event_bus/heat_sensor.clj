@@ -12,7 +12,8 @@
    (java.util.function
     Supplier))
   (:require
-   [clojure.tools.logging :as log]))
+   [clojure.tools.logging :as log]
+   [org.archimitra.vertx.util.interface :as util]))
 
 ;get the next random number
 (defn delta []
@@ -43,15 +44,14 @@
 ; so the proxy will override the start(Promise<Void>) which is the base method
 ; Supplier Functional Interface is used to get the Heat Sensor Verticle instance using proxy
 (defn ^Supplier create-heat-sensor-verticle []
-  (reify Supplier
-    (get [this]
-      (proxy [AbstractVerticle] []
-        (start [^Promise startPromise]
-          (let [_ (log/info "BEFORE vertx and context in Heat Sensor Verticle")
-                vertx (.getVertx this)
-                _ (log/info "context : " (Vertx/currentContext))
-                current-context (Vertx/currentContext)]
-            (log/info (str "In START Heat Sensor Verticle with ID: " (.deploymentID this)))
-            (.putLocal current-context "sensor-id" (.toString (UUID/randomUUID)))
-            (schedule-next-update vertx)
-            (.complete startPromise)))))))
+  (util/f-to-supplier 
+   #(proxy [AbstractVerticle] []
+     (start [^Promise startPromise]
+       (let [_ (log/info "BEFORE vertx and context in Heat Sensor Verticle")
+             vertx (.getVertx this)
+             _ (log/info "context : " (Vertx/currentContext))
+             current-context (Vertx/currentContext)]
+         (log/info (str "In START Heat Sensor Verticle with ID: " (.deploymentID this)))
+         (.putLocal current-context "sensor-id" (.toString (UUID/randomUUID)))
+         (schedule-next-update vertx)
+         (.complete startPromise))))))

@@ -1,4 +1,12 @@
 {:paths ["src" "resources"]
- :deps {io.vertx/vertx-core {:mvn/version "4.3.2"}}
- :aliases {:test {:extra-paths ["test"]
-                  :extra-deps {}}}}
+ :deps {io.vertx/vertx-core {:mvn/version "4.3.2"}
+        org.slf4j/slf4j-api {:mvn/version "1.7.36"}
+        ch.qos.logback/logback-classic {:mvn/version "1.2.11"}
+        org.clojure/tools.logging {:mvn/version "1.2.4"}
+        org.clojure/data.json {:mvn/version "0.2.7"}}
+ :aliases {:dev {:extra-paths ["development/src"
+                               "components/vertx-echo/src"
+                               "components/vertx-echo/resources"]}
+           :test {:extra-paths ["components/vertx-echo/test"]
+                  :extra-deps {}}}
+ :jvm-opts {"vertx.logger-delegate-factory-class-name" "io.vertx.core.logging.SLF4JLogDelegateFactory"}}

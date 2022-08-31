@@ -17,14 +17,17 @@
     Supplier))
   (:require
    [clojure.tools.logging :as log]
-   [clojure.data.json :as json]))
+   [clojure.data.json :as json]
+   [org.archimitra.vertx.util.interface :as util]))
 
 (defn reply-handler [^HttpServerResponse response]
   (reify Handler
     (handle [this async-result]
       (if (.succeeded async-result)
-        (.write response "event: average\n")
-        (.write response (str "data: " (json/write-str (.body (.result async-result))) "\n\n"))))))
+        (let [result (.body (.result async-result))
+              _ (log/info "Average : " result)]
+          (.write response "event: average\n")
+          (.write response (str "data: " result "\n\n")))))))
 
 (defn ticks-handler [^EventBus event-bus ^HttpServerResponse response]
   (reify Handler
@@ -85,9 +88,8 @@
 ; thus need to override the base method in the abstract class
 ; so the proxy will override the start(Promise<Void>) which is the base method
 (defn ^Supplier create-http-server-verticle []
-  (reify Supplier
-    (get [this]
-      (proxy [AbstractVerticle] []
-        (start [^Promise startPromise]
-          (log/info "In START Http Server")
-          (configure-vertx-server (.getVertx this) startPromise))))))
+  (util/f-to-supplier 
+   #(proxy [AbstractVerticle] []
+     (start [^Promise startPromise]
+       (log/info "In START Http Server")
+       (configure-vertx-server (.getVertx this) startPromise)))))

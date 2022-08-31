@@ -10,7 +10,8 @@
    (java.util.function
     Supplier))
   (:require
-   [clojure.tools.logging :as log]))
+   [clojure.tools.logging :as log]
+   [org.archimitra.vertx.util.interface :as util]))
 
 ;decimal-format - to represent decimal format
 (def decimal-format (DecimalFormat. "#.##"))
@@ -29,13 +30,12 @@
 ; so the proxy will override the start(Promise<Void>) which is the base method
 ; Supplier Functional Interface is used to get the Listener Verticle instance using proxy
 (defn ^Supplier create-listener-verticle []
-  (reify Supplier
-    (get [this]
-      (proxy [AbstractVerticle] []
-        (start [^Promise startPromise]
-          (let [event-bus (.eventBus (.getVertx this))]
-            (log/info "In START Listener Verticle") 
-            (.consumer event-bus 
-                       "sensor.updates" 
-                       (message-handler))
-            (.complete startPromise)))))))
+  (util/f-to-supplier
+   #(proxy [AbstractVerticle] []
+     (start [^Promise startPromise]
+       (let [event-bus (.eventBus (.getVertx this))]
+         (log/info "In START Listener Verticle")
+         (.consumer event-bus
+                    "sensor.updates"
+                    (message-handler))
+         (.complete startPromise))))))

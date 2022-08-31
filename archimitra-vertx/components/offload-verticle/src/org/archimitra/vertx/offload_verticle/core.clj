@@ -52,10 +52,10 @@
         (.complete startPromise)))))
 
 (comment
-  (let [vertx (Vertx/vertx)]
-    (try
-      (let [opts (doto (DeploymentOptions.)
-                   (.setInstances 2)
-                   (.setWorker true))]
-        (log/info (.result (.deployVerticle vertx (create-offload-verticle) opts))))
-      (catch Exception e (log/error "Woops" (.getMessage e))))))
+ (try
+   (let [vertx (Vertx/vertx)
+         opts (doto (DeploymentOptions.)
+                (.setInstances 2)
+                (.setWorker true))]
+     (log/info (.result (.deployVerticle vertx (create-offload-verticle) opts))))
+   (catch Exception e (log/error "Woops" (.getMessage e)))))

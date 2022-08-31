@@ -14,7 +14,7 @@
 (defn handle-uncaught-exceptions [^Vertx vertx]
   (.exceptionHandler vertx (reify Handler 
                              (handle [this event] 
-                               (log/error (str event " throws exception " (.getMessage event)))))))
+                               (log/error event " throws exception " (.getMessage event))))))
 
 (comment
   (try
