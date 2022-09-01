@@ -15,8 +15,8 @@
    [org.archimitra.vertx.util.interface :as util]))
 
 (defn periodic-handler []
-  (reify Handler
-    (handle [this _] 
+  (util/f-to-handler
+    (fn [_] 
       (try 
         (log/info "Zzzz..")
         (Thread/sleep 8000)

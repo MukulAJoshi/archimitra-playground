@@ -8,22 +8,23 @@
    (io.vertx.core.http
     HttpServerRequest))
   (:require
-   [clojure.tools.logging :as log]))
+   [clojure.tools.logging :as log]
+   [org.archimitra.vertx.util.interface :as util]))
 
 ; Atom - counter - initial value set to 1
 ; Atom will enable thread safe update of counter
 (def counter (atom 1))
 
-(defn ^Handler tick-handler []
-  (reify Handler
-    (handle [this _]
+(defn tick-handler ^Handler []
+  (util/f-to-handler
+    (fn [_]
       (log/info "tick"))))
 
-(defn ^Handler request-handler []
-  (reify Handler
-    (handle [this request] 
-      ((log/info (str "Request #" (swap! counter inc) " from " (.host (.remoteAddress request))))
-       (.end (.response request) "Hello!")))))
+(defn request-handler ^Handler []
+  (util/f-to-handler
+    (fn [request]
+      (log/info (str "Request #" (swap! counter inc) " from " (.host (.remoteAddress request))))
+      (.end (.response request) "Hello!"))))
 
 ; Core function that creates the Vertx HttpServer 
 (defn configure-vertx-server [^Vertx vertx]

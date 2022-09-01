@@ -6,10 +6,13 @@
     AbstractVerticle
     Promise))
   (:require
-   [clojure.tools.logging :as log]))
+   [clojure.tools.logging :as log]
+   [org.archimitra.vertx.util.interface :as util]))
 
-; Atom - vertx - refers to the main entry point to Vertx functionality
-(def vertx (atom (Vertx/vertx)))
+(defn timer-handler ^Handler []
+  (util/f-to-handler
+    (fn [_] 
+      (while true ()))))
 
 ; proxied methods cannot be invoked from the abstract class
 ; thus need to override the base method in the abstract class
@@ -19,16 +22,11 @@
   (proxy [AbstractVerticle] []
     (start [^Promise startPromise]
       (log/info "In START")
-      (.setTimer (.getVertx this) 
-                   1000 
-                   (reify Handler
-                     (handle [this _]
-                       (while true ()))))
+      (.setTimer (.getVertx this) 1000 (timer-handler))
       (.complete startPromise))))
 
 (comment
-  (deref vertx)
-  (log/info @vertx)
   (try
-    (log/info (.result (.deployVerticle @vertx (create-block-event-loop-verticle))))
+    (let [vertx (Vertx/vertx)] 
+      (log/info (.result (.deployVerticle vertx (create-block-event-loop-verticle))))) 
     (catch Exception e (log/error (.getMessage e)))))

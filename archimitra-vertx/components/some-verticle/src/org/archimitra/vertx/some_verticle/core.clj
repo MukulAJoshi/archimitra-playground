@@ -6,26 +6,27 @@
     AbstractVerticle
     Promise))
   (:require
-   [clojure.tools.logging :as log]))
+   [clojure.tools.logging :as log]
+   [org.archimitra.vertx.util.interface :as util]))
 
 ; Atom - counter - initial value set to 1
 ; Atom will enable thread safe update of counter
 (def counter (atom 1))
 
-(defn periodic-handler []
-  (reify Handler
-    (handle [this _]
+(defn periodic-handler ^Handler []
+  (util/f-to-handler
+    (fn [_]
       (log/info "tick"))))
 
-(defn request-handler []
-  (reify Handler
-    (handle [this request] 
+(defn request-handler ^Handler []
+  (util/f-to-handler
+    (fn [request] 
       (log/info (str "Request #" (swap! counter inc) " from " (.host (.remoteAddress request))))
       (.end (.response request) "Hello!"))))
 
-(defn listener-handler [^Promise startPromise]
-  (reify Handler
-    (handle [this async-result]
+(defn listener-handler ^Handler [^Promise startPromise]
+  (util/f-to-handler
+    (fn [async-result]
       (if (.succeeded async-result)
         (.complete startPromise)
         (.fail startPromise (.cause async-result))))))

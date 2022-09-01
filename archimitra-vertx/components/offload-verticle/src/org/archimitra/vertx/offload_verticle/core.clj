@@ -15,9 +15,9 @@
    [clojure.tools.logging :as log]
    [org.archimitra.vertx.util.interface :as util]))
 
-(defn blocking-code-handler []
-  (reify Handler
-    (handle [this promise]
+(defn blocking-code-handler ^Handler []
+  (util/f-to-handler
+    (fn [promise]
       (log/info "Blocking code running")
       (try 
         (Thread/sleep 4000)
@@ -25,16 +25,16 @@
         (.complete promise (str "Ok!"))
         (catch InterruptedException e (.fail promise e))))))
 
-(defn result-handler []
-  (reify Handler
-    (handle [this async-result]
+(defn result-handler ^Handler []
+  (util/f-to-handler
+    (fn [async-result]
       (if (.succeeded async-result)
         (log/info (str "Blocking code result: " (.result async-result)))
         (log/error (str "Woops" (.cause async-result)))))))
 
-(defn periodic-handler [^Vertx vertx]
-  (reify Handler
-    (handle [this _]
+(defn periodic-handler ^Handler [^Vertx vertx]
+  (util/f-to-handler
+    (fn [_]
       (log/info "tick")
       (.executeBlocking vertx (blocking-code-handler) (result-handler)))))
 
@@ -42,7 +42,7 @@
 ; thus need to override the base method in the abstract class
 ; so the proxy will override the start(Promise<Void>) which is the base method
 ; Supplier Functional Interface is used to get the Worker Verticle instance using proxy
-(defn ^Supplier create-offload-verticle []
+(defn create-offload-verticle ^Supplier []
   (util/f-to-supplier 
    #(proxy [AbstractVerticle] [] 
       (start [^Promise startPromise] 
