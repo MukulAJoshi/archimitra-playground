@@ -6,7 +6,8 @@
    (io.vertx.core.net
     NetSocket))
   (:require
-   [clojure.tools.logging :as log]))
+   [clojure.tools.logging :as log]
+   [org.archimitra.vertx.util.core :as util]))
 
 ; Atom - number-of-connections - initial value set to 0
 ; Atom will enable thread safe update of number-of-connections
@@ -19,31 +20,31 @@
   (swap! number-of-connections dec))
 
 (defn http-request-handler []
- (reify Handler
-   (handle [this request]
+ (util/f-to-handler
+   (fn [request]
      (.end (.response request) (str "We now have " @number-of-connections " connections")))))
 
 (defn periodic-handler []
-  (reify Handler
-    (handle [this _]
+  (util/f-to-handler
+    (fn [_]
       (str "We now have " @number-of-connections " connections"))))
 
 (defn socket-handler [socket]
-  (reify Handler
-    (handle [this buffer]
+  (util/f-to-handler
+    (fn [buffer]
       (log/info "In Socket Handler")
       (.write socket buffer)
       (if (.endsWith (.toString buffer) "/quit\n") 
         (.close socket)))))
 
 (defn close-socket-handler []
- (reify Handler
-   (handle [this _]
+ (util/f-to-handler
+   (fn [_]
      (dec-connections))))
 
 (defn net-connect-handler []
-  (reify Handler
-    (handle [this socket] 
+  (util/f-to-handler
+    (fn [socket] 
       (log/info "In NetServer Connect Handler") 
       (inc-connections)
       (.handler socket (socket-handler socket)) 
