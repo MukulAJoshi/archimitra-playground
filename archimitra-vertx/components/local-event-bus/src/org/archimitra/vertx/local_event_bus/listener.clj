@@ -17,9 +17,9 @@
 (def decimal-format (DecimalFormat. "#.##"))
 
 ;message-handler - handle message from subscription
-(defn message-handler []
-  (reify Handler
-    (handle [this message]
+(defn message-handler ^Handler []
+  (util/f-to-handler
+    (fn [message]
       (let [message-body (.body message)
             id (key (first message-body))
             temperature (.format decimal-format (val (first message-body)))]
@@ -29,7 +29,7 @@
 ; thus need to override the base method in the abstract class
 ; so the proxy will override the start(Promise<Void>) which is the base method
 ; Supplier Functional Interface is used to get the Listener Verticle instance using proxy
-(defn ^Supplier create-listener-verticle []
+(defn create-listener-verticle ^Supplier []
   (util/f-to-supplier
    #(proxy [AbstractVerticle] []
      (start [^Promise startPromise]

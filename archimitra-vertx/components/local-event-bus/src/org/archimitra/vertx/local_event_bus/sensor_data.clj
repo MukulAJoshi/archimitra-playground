@@ -16,9 +16,9 @@
 (def last-values (atom {}))
 
 ;update-message-handler - handle message from subscription
-(defn update-message-handler []
-  (reify Handler
-    (handle [this message]
+(defn update-message-handler ^Handler []
+  (util/f-to-handler
+    (fn [message]
       (let [message-body (.body message)
             id (key (first message-body))
             temperature (val (first message-body))]
@@ -27,9 +27,9 @@
         (swap! last-values assoc id temperature)))))
 
 ;update-message-handler - handle message from subscription
-(defn average-message-handler []
-  (reify Handler
-    (handle [this message]
+(defn average-message-handler ^Handler []
+  (util/f-to-handler
+    (fn [message]
       (try
         (let [temperature-values (vals @last-values)
               _ (log/info @last-values)
@@ -44,7 +44,7 @@
 ; thus need to override the base method in the abstract class
 ; so the proxy will override the start(Promise<Void>) which is the base method
 ; Supplier Functional Interface is used to get the Sensor Data Verticle instance using proxy
-(defn ^Supplier create-sensor-data-verticle []
+(defn create-sensor-data-verticle ^Supplier []
   (util/f-to-supplier
    #(proxy [AbstractVerticle] []
      (start [^Promise startPromise]
