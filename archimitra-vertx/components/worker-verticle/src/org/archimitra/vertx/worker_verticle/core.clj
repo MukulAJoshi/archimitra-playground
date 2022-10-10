@@ -46,6 +46,7 @@
                            :config {:options {}}}}
     :worker-verticle {:service #::ds{:start (fn [{{:keys [vertx options supplier]} ::ds/config}]
                                              (try
+                                               ;(.result (.deployVerticle vertx (create-worker-verticle) options))
                                                (.result (.deployVerticle vertx supplier options))
                                                (catch Exception e (log/error (.getMessage e)))))
                                      :stop (fn [{{:keys [vertx]} ::ds/config 
@@ -57,19 +58,22 @@
                                               :options (doto (DeploymentOptions.) 
                                                          (.setInstances 2) 
                                                          (.setWorker true)) 
-                                              :supplier (ds/local-ref [:supplier])}}
-                      :supplier (util/f-to-supplier 
-                                 #(proxy [AbstractVerticle] [] 
-                                    (start [^Promise startPromise] 
-                                      (log/info "In START") 
-                                      (.setPeriodics (.getVertx this) 10000 (util/f-to-handler
-                                                                             (fn [_]
-                                                                               (try
-                                                                                 (log/info "Zzzz..")
-                                                                                 (Thread/sleep 5000)
-                                                                                 (log/info "Up")
-                                                                                 (catch InterruptedException e (log/error (.getMessage e))))))) 
-                                      (.complete startPromise))))}}})
+                                              :supplier (ds/local-ref [:verticle-supplier])}}
+                      :verticle-supplier (util/f-to-supplier 
+                                          #(proxy [AbstractVerticle] [] 
+                                             (start [^Promise startPromise] 
+                                               (log/info "In START") 
+                                               (log/info (.getVertx this))
+                                               (try 
+                                                 (.setPeriodic (.getVertx this) 10000 (util/f-to-handler 
+                                                                                       (fn [_] 
+                                                                                         (try 
+                                                                                           (log/info "Zzzz..") 
+                                                                                           (Thread/sleep 5000) 
+                                                                                           (log/info "Up") 
+                                                                                           (catch InterruptedException e (log/error (.getMessage e))))))) 
+                                                 (.complete startPromise)
+                                                 (catch Exception e (log/error (.getMessage e)))))))}}})
 
 (comment
   (try
