@@ -4,9 +4,6 @@
         org.slf4j/slf4j-api {:mvn/version "1.7.36"}
         ch.qos.logback/logback-classic {:mvn/version "1.2.11"}
         org.clojure/tools.logging {:mvn/version "1.2.4"}}
- :aliases {:dev {:extra-paths ["development/src"
-                               "components/worker-verticle/src"
-                               "components/worker-verticle/resources"]}
-           :test {:extra-paths ["components/worker-verticle/test"]
+ :aliases {:test {:extra-paths ["test"]
                   :extra-deps {}}}
  :jvm-opts {"vertx.logger-delegate-factory-class-name" "io.vertx.core.logging.SLF4JLogDelegateFactory"}}

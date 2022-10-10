@@ -1,0 +1,11 @@
+
+{:paths ["src" "resources"]
+ :deps {club.donutpower/system {:mvn/version "0.0.165"}
+        org.slf4j/slf4j-api {:mvn/version "1.7.36"}
+        ch.qos.logback/logback-classic {:mvn/version "1.2.11"}
+        org.clojure/tools.logging {:mvn/version "1.2.4"}
+        ring/ring-core {:mvn/version "1.9.6"}
+        ring/ring-jetty-adapter {:mvn/version "1.9.6"}}
+ :aliases {:test {:extra-paths ["test"]
+                  :extra-deps {}}}}
+ ;:jvm-opts {"vertx.logger-delegate-factory-class-name" "io.vertx.core.logging.SLF4JLogDelegateFactory"}}
