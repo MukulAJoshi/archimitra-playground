@@ -1,0 +1,48 @@
+; This is the Calva evaluation results output window.
+; TIPS: The keyboard shortcut `ctrl+alt+o o` shows and focuses this window
+;   when connected to a REPL session.
+; Please see https://calva.io/output/ for more info.
+; Happy coding! ♥️
+
+; Jacking in...
+; Starting Jack-in Terminal: clojure -Sdeps '{:deps {nrepl/nrepl {:mvn/version,"1.0.0"},cider/cider-nrepl {:mvn/version,"0.28.5"}}}' -M -m nrepl.cmdline --middleware "[cider.nrepl/cider-middleware]"
+; Hooking up nREPL sessions...
+; Connected session: clj
+; TIPS:
+;   - You can edit the contents here. Use it as a REPL if you like.
+;   - `alt+enter` evaluates the current top level form.
+;   - `ctrl+enter` evaluates the current form.
+;   - `alt+up` and `alt+down` traverse up and down the REPL command history
+;      when the cursor is after the last contents at the prompt
+;   - Clojure lines in stack traces are peekable and clickable.
+clj꞉user꞉>  ; Use `alt+enter` to evaluate
+; Jack-in done.
+clj꞉user꞉> 
+nil
+clj꞉org.archimitra.rad.xtdb-adapter.core꞉> 
+#'org.archimitra.rad.xtdb-adapter.core/read-config
+clj꞉org.archimitra.rad.xtdb-adapter.core꞉> 
+{:arglists ([source]),
+ :doc "Read the config.edn for XTDB connectivity",
+ :line 18,
+ :column 1,
+ :file
+ "/code/archimitra-playground/archimitra-rad/components/xtdb-adapter/src/org/archimitra/rad/xtdb_adapter/core.clj",
+ :name read-config,
+ :ns #namespace[org.archimitra.rad.xtdb-adapter.core]}
+clj꞉org.archimitra.rad.xtdb-adapter.core꞉> 
+-------------------------
+org.archimitra.rad.xtdb-adapter.core/read-config
+([source])
+  Read the config.edn for XTDB connectivity
+nil
+clj꞉org.archimitra.rad.xtdb-adapter.core꞉> 
+"Read the config.edn for XTDB connectivity"
+clj꞉org.archimitra.rad.xtdb-adapter.core꞉> 
+{:xtdb.jdbc/connection-pool
+ {:dialect #:xtdb{:module xtdb.jdbc.psql/->dialect},
+  :pool-opts {},
+  :db-spec {:host "localhost", :dbname "xtdbdb", :user "xtdb", :password "xtdb"}},
+ :xtdb/tx-log {:xtdb/module xtdb.jdbc/->tx-log, :connection-pool :xtdb.jdbc/connection-pool},
+ :xtdb/document-store {:xtdb/module xtdb.jdbc/->document-store, :connection-pool :xtdb.jdbc/connection-pool}}
+clj꞉org.archimitra.rad.xtdb-adapter.core꞉> 

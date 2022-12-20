@@ -1,0 +1,11 @@
+{:xtdb.jdbc/connection-pool {:dialect {:xtdb/module xtdb.jdbc.psql/->dialect}
+                             :pool-opts {}
+                             :db-spec {:host     "localhost"
+                                       :dbname   "xtdbdb"
+                                       :user     "xtdb"
+                                       :password "xtdb"}}
+ :xtdb/tx-log {:xtdb/module xtdb.jdbc/->tx-log
+               :connection-pool :xtdb.jdbc/connection-pool}
+ :xtdb/document-store {:xtdb/module xtdb.jdbc/->document-store
+                       :connection-pool :xtdb.jdbc/connection-pool}
+ }

@@ -1,0 +1,10 @@
+[{:xt/id :rdfs/Resource
+  :rdf/type :rdfs/Class
+  :rdfs/label "Resource"
+  :rdfs/comment "The class resource, everything"}
+ {:xt/id :rdfs/Class
+ :rdf/type :rdfs/Class
+ :rdfs/label "Class"
+ :rdfs/comment "The class of classes."
+ :rdfs/subClassOf :rdfs/Resource}
+]
